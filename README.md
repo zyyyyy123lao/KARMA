@@ -26,12 +26,6 @@ conda env create -f environment.yml
 conda activate karma
 ```
 
-Or with pip:
-
-```bash
-pip install ai2thor numpy scipy opencv-python sentence-transformers pyyaml requests openai
-```
-
 ## Quick Start
 
 ### CLI Mode
