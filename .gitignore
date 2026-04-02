@@ -1,2 +1,75 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data files (keep structure, ignore content)
+data/
+data/*
+!data/.gitkeep
+
+# Memory and logs
+memory/
+memory/*
+!memory/.gitkeep
+logs/
+logs/*
+!logs/.gitkeep
+
+# Video output
+*.mp4
+videos/
+videos/*
+!videos/.gitkeep
+
+# Agent output
+agent_*/
+top_view/
+
+# Python bytecode for old scripts (after refactoring)
+scripts/*.pyc
+scripts/__pycache__/
+
+# Environment
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Large model files
+*.pth
+*.pt
+*.bin
+*.h5
+
+# Temporary files
+*.tmp
+*.cache
+*.bak
+
 KARMA: Augmenting Embodied AI Agents with Long-and-Short Term Memory Systems.pdf
-.ipynb_checkpoints
+docs

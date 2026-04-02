@@ -1,0 +1,40 @@
+# Composite multi-phase experiment configuration
+# Task: Complex kitchen workflow with multiple objects
+
+agent:
+  scene: "FloorPlan1"
+
+logging:
+  level: "DEBUG"
+
+experiment:
+  type: "composite"
+  task: "prepare meal: wash vegetables, slice them, and store in fridge"
+  task_description: "prepare meal preparation"
+  phases:
+    - name: "preparation"
+      steps:
+        - action: "wash"
+          object: "Apple"
+        - action: "wash"
+          object: "Tomato"
+        - action: "wash"
+          object: "Lettuce"
+    - name: "cutting"
+      requires:
+        - "Knife"
+      steps:
+        - action: "slice"
+          object: "Tomato"
+        - action: "slice"
+          object: "Apple"
+        - action: "slice"
+          object: "Lettuce"
+    - name: "storage"
+      steps:
+        - action: "put"
+          object: "Potato"
+          receptacle: "Plate"
+        - action: "put"
+          object: "TomatoSliced"
+          receptacle: "Plate"

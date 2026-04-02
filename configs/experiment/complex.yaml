@@ -1,0 +1,23 @@
+# Complex multi-step experiment configuration
+# Task: Multiple objects with washing, slicing, and placement
+
+agent:
+  scene: "FloorPlan1"
+
+logging:
+  level: "INFO"
+
+experiment:
+  type: "complex"
+  task: "prepare a fruit plate: wash apple, wash tomato, slice tomato"
+  task_description: "prepare a fruit plate"
+  steps:
+    - action: "wash"
+      object: "Apple"
+    - action: "wash"
+      object: "Tomato"
+    - action: "slice"
+      object: "Tomato"
+    - action: "put"
+      object: "TomatoSliced"
+      receptacle: "CounterTop"

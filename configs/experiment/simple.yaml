@@ -1,0 +1,14 @@
+# Simple single-task experiment configuration
+# Task: Wash and slice a single tomato
+
+agent:
+  scene: "FloorPlan1"
+
+logging:
+  level: "INFO"
+
+# Simple task: wash and slice a tomato
+experiment:
+  type: "simple"
+  task: "wash and slice a tomato"
+  task_description: "wash and slice a tomato"

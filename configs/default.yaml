@@ -1,0 +1,68 @@
+# Default configuration for KARMA
+# All paths are relative to the project root
+
+# API configuration
+# Sensitive values should be provided via environment variables
+api:
+  api_key: "${OPENAI_API_KEY}"
+  base_url: "https://api.chatanywhere.tech/v1"
+  model_name: "gpt-4o"
+  temperature: 0.0
+  max_tokens: 4096
+
+# Agent / Controller configuration
+agent:
+  name: "robot1"
+  agent_mode: "default"
+  visibility_distance: 100
+  grid_size: 0.25
+  rotate_step_degrees: 20
+  quality: "Low"
+  width: 900
+  height: 900
+  field_of_view: 90
+  scene: "FloorPlan1"
+  agent_count: 1
+  render_depth_image: false
+  render_instance_segmentation: false
+  snap_to_grid: false
+
+  # Navigation thresholds
+  goal_threshold: 0.3
+  distance_delta_threshold: 0.2
+  stuck_count_limit: 15
+  reachable_threshold: 0.3
+  explore_exit_distance: 1.5
+
+# Memory configuration
+memory:
+  short_term_max_size: 100
+  similarity_threshold: 0.3
+  position_change_threshold: 0.3
+  exploration_positions:
+    - [1.25, 0.0, -1.75]
+    - [-1.0, 0.0, 0.0]
+    - [-0.25, 0.0, -1.5]
+    - [-1.0, 0.0, -1.5]
+    - [0.5, 0.0, 1.5]
+    - [1.5, 0.0, -0.25]
+    - [1.5, 0.0, 1.0]
+    - [-2.0, 0.0, 2.0]
+
+# Path configuration (relative to base)
+paths:
+  base: "${KARMA_BASE_PATH}"
+  memory: "memory"
+  logs: "logs"
+  outputs: "data/outputs"
+  videos: "data/videos"
+  prompts: "prompts"
+  experience: "experience"
+  alfred: "ALFRED_L"
+
+# Logging configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "karma.log"
+  console: true

@@ -1,51 +1,94 @@
-# **KARMA: Augmenting Embodied AI Agents with Long-and-short Term Memory Systems**
-## Setup
+# KARMA - Embodied AI Agent with Memory Systems
 
-To get started, clone the KARMA repository:
+> Augmenting Embodied AI Agents with Long-and-short Term Memory Systems
+
+## Overview
+
+KARMA is a research-grade embodied AI agent that uses GPT-4o for task planning combined with a three-tier memory architecture (short-term, long-term, semantic) to solve complex household tasks in the AI2-THOR simulation environment.
+
+## Architecture
+
 ```
-git clone https://github.com/WZX0Swarm0Robotics/KARMA
+karma/
+├── agents/       # Robot, navigation, controller, skills
+├── memory/       # Short-term, long-term, semantic memory
+├── perception/  # Image analysis, state recognition, similarity
+├── planning/     # Task decomposition, LLM planner, executor
+├── utils/       # Logging, paths, file utilities
+├── gui/        # Tkinter-based graphical interface
+└── config.py   # Singleton configuration manager
 ```
 
-Switch to the karma directory
-```
-cd KARMA
-```
+## Installation
 
-Create a conda environment (or virtualenv):
-```
+```bash
 conda env create -f environment.yml
-```
-
-Activate the virtual environment
-```
 conda activate karma
 ```
 
-## Creating OpenAI API Key
-The code relies on OpenAI API. Create an API Key at https://platform.openai.com/.
+Or with pip:
 
-In file /karma/scripts/llm_as_planner.py, change 'your_key' in line 4 of the code to your own OpenAI api key.
-
-In file /karma/scripts/execute_LLM_plan.py, add the following code: api_key = 'your_key'
-
-## Running Script
-Run the following command to generate output execuate python scripts to perform the tasks in the given AI2Thor floor plans. 
-
-Refer to https://ai2thor.allenai.org/demo for the layout of various AI2Thor floor plans.
-
+```bash
+pip install ai2thor numpy scipy opencv-python sentence-transformers pyyaml requests openai
 ```
-python3 scripts/GUI_karma.py 
-```
-Note: You can enter the tasks you want the agent to perform in the GUI, for example："wash an apple and put it on the countertop", "slice an apple and place it on the plate". 
 
-## Citation
-If you find our paper and code useful in your research, please consider giving a star ⭐ and citation 📝:
+## Quick Start
 
+### CLI Mode
+
+```bash
+python -m scripts.main --task "wash the apple"
+python -m scripts.main --task "slice the tomato" --scene FloorPlan2
+python -m scripts.main --config configs/experiment/complex.yaml --verbose
 ```
-@article{wang2024karma,
-  title={Karma: Augmenting embodied ai agents with long-and-short term memory systems},
-  author={Wang, Zixuan and Yu, Bo and Zhao, Junzhe and Sun, Wenhao and Hou, Sai and Liang, Shuai and Hu, Xing and Han, Yinhe and Gan, Yiming},
-  journal={arXiv preprint arXiv:2409.14908},
-  year={2024}
-}
+
+### GUI Mode
+
+```bash
+python -m scripts.main --gui
 ```
+
+### Run Experiments
+
+```bash
+python -m scripts.run_experiment --experiments configs/experiment
+```
+
+## Configuration
+
+All settings are managed via YAML files in `configs/`:
+
+- `configs/default.yaml` - Default configuration
+- `configs/api.yaml` - API credentials (use environment variables)
+- `configs/experiment/` - Pre-defined experiment configurations
+
+Environment variables for sensitive data:
+
+```bash
+export OPENAI_API_KEY="your-key-here"
+export KARMA_BASE_PATH="/path/to/karma"
+```
+
+## Key Features
+
+- **Three-tier memory**: Short-term (dynamic), long-term (scene layout), semantic (experience)
+- **LLM task decomposition**: GPT-4o generates executable Python from natural language
+- **Vision-based state recognition**: GPT-4o analyzes frames to infer object states
+- **Skill registry**: Extensible set of robot capabilities
+- **Experiment tracking**: Structured logging and metric collection
+- **GUI interface**: Tkinter app for task management and memory inspection
+
+## Testing
+
+```bash
+pytest tests/ -v
+```
+
+## Documentation
+
+- [Refactoring Plan](./docs/refactoring_plan.md) - Architecture and migration guide
+- [docs/](./docs/) - Additional documentation
+
+## License
+
+MIT
