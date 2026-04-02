@@ -1,6 +1,10 @@
 import json
 import numpy as np
 from sentence_transformers import SentenceTransformer, util
+import os
+
+# 定义基础路径
+BASE_PATH = '/root/autodl-tmp/KARMA'
 
 def load_file(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
@@ -48,19 +52,19 @@ def update_memory_with_state(memory_file, analysis_file):
 
 # 指定文件路径
 
-analysis_file_path = '/home/user/wzx/karma/memory/analysis_results.json'
+analysis_file_path = os.path.join(BASE_PATH, 'memory/analysis_results.json')
 
 # 读取 memory3.json 中的物体数据
-memory_file_path = '/home/user/wzx/karma/memory/memory3.json'
-example_file_path = '/home/user/wzx/karma/experience/experience.json'
-examples_output_path = '/home/user/wzx/karma/prompts/examples.txt'
+memory_file_path = os.path.join(BASE_PATH, 'memory/memory3.json')
+example_file_path = os.path.join(BASE_PATH, 'experience/experience.json')
+examples_output_path = os.path.join(BASE_PATH, 'prompts/examples.txt')
 # 更新memory3.json文件 with state
 update_memory_with_state(memory_file_path, analysis_file_path)
 
 items = load_json(memory_file_path)
 
 # 读取并提取任务描述
-instruction_file_path = '/home/user/wzx/karma/prompts/instruction.txt'
+instruction_file_path = os.path.join(BASE_PATH, 'prompts/instruction.txt')
 description = load_file(instruction_file_path)
 extracted_task = extract_task(description)
 
@@ -100,7 +104,7 @@ if extracted_task:
     print(f"Object Type: {top_result_item['objectType']}, Position: {top_result_item['position']}, Score: {cosine_scores[top_result_idx]:.4f}")
  
     # 将最相似的物体保存到 /prompts/short_term_memory.txt 中
-    short_term_memory_file_path = '/home/user/wzx/karma/prompts/short_term_memory.txt'
+    short_term_memory_file_path = os.path.join(BASE_PATH, 'prompts/short_term_memory.txt')
     object_type = top_result_item['objectType']
     position = top_result_item['position']
     formatted_content = f"{object_type} is at position ({position['x']:.2f}, {position['y']:.2f}, {position['z']:.2f})."

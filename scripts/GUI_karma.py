@@ -142,11 +142,15 @@ from tkinter import messagebox
 from datetime import datetime
 import json
 import execute_LLM_plan
+import os
 
-history_file_path = '/home/user/wzx/karma/history_tasks/task_history.json'
-similarity_flag_path = '/home/user/wzx/karma/logs/similarity_flag.json'
-task_description_file_path = '/home/user/wzx/karma/logs/task_description.json'
-short_term_memory_path = '/home/user/wzx/karma/memory/memory3.json'
+# 定义基础路径
+BASE_PATH = '/root/autodl-tmp/KARMA'
+
+history_file_path = os.path.join(BASE_PATH, 'history_tasks/task_history.json')
+similarity_flag_path = os.path.join(BASE_PATH, 'logs/similarity_flag.json')
+task_description_file_path = os.path.join(BASE_PATH, 'logs/task_description.json')
+short_term_memory_path = os.path.join(BASE_PATH, 'memory/memory3.json')
 
 robots = [{'name': 'robot1', 'skills': ['GoToObject', 'OpenObject', 'CloseObject', 'BreakObject', 'SliceObject', 'SwitchOn', 'SwitchOff', 'PickupObject', 'PutObject', 'DropHandObject', 'ThrowObject', 'PushObject', 'PullObject']}]
 
@@ -186,7 +190,7 @@ def save_task():
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         task_with_time = f"{task} ({current_time})"
         content = f"Please help me decompose the following tasks: {task}. Please output only the generated code."
-        with open('/home/user/wzx/karma/prompts/instruction.txt', 'w', encoding='utf-8') as file:
+        with open(os.path.join(BASE_PATH, 'prompts/instruction.txt'), 'w', encoding='utf-8') as file:
             file.write(content)
         
         try:
@@ -291,7 +295,7 @@ def save_short_term_memory():
 
 root = tk.Tk()
 root.title("Task Input")
-root.geometry("900x600")
+root.geometry("1000x900")
 
 large_font = ("Helvetica", 16)
 
@@ -328,7 +332,7 @@ exit_button.pack(pady=20)
 memory_label = tk.Label(root, text="Short-term Memory:", font=large_font)
 memory_label.pack(pady=10)
 
-memory_text = tk.Text(root, width=100, height=10, font=large_font)
+memory_text = tk.Text(root, width=100, height=5, font=large_font)
 memory_text.pack(pady=10)
 
 load_memory_button = tk.Button(root, text="Load Short-term Memory", font=large_font, command=load_short_term_memory)

@@ -18,6 +18,9 @@ from mapping import second_map
 from memory_save import compare_json_files
 from memory_save import read_json_file
 
+# 定义基础路径
+BASE_PATH = '/root/autodl-tmp/KARMA'
+
 def closest_node(node, nodes, no_robot, clost_node_location):
     crps = []
     distances = distance.cdist([node], nodes)[0]
@@ -72,8 +75,8 @@ c = Controller(
     renderInstanceSegmentation=False,
     agentCount=no_robot,
     # camera properties
-    width=1000,
-    height=1000,
+    width=900,
+    height=900,
     fieldOfView=90
 )
 multi_agent_event = c.step(action="Done") 
@@ -163,7 +166,7 @@ def exec_actions():
                     else:
                         print("Action failed:", multi_agent_event1['errorMessage'])
                     second_map(multi_agent_event1)
-                    compare_json_files('objects_locations1.json', 'objects_locations2.json', 'memory3.json')
+                    compare_json_files(os.path.join(BASE_PATH, 'memory/objects_locations1.json'), os.path.join(BASE_PATH, 'memory/objects_locations2.json'), os.path.join(BASE_PATH, 'memory/memory3.json'))
                 elif act['action'] == 'Done':
                     multi_agent_event = c.step(action="Done")
               
@@ -307,7 +310,7 @@ def PutObject(robot, put_obj, recp):
     objs_dists = list([obj["distance"] for obj in c.last_event.metadata["objects"]])
     
     second_map(multi_agent_event)
-    compare_json_files('objects_locations1.json', 'objects_locations2.json', 'memory2.json')
+    compare_json_files(os.path.join(BASE_PATH, 'memory/objects_locations1.json'), os.path.join(BASE_PATH, 'memory/objects_locations2.json'), os.path.join(BASE_PATH, 'memory/memory2.json'))
 
     metadata = c.last_event.events[agent_id].metadata
     robot_location = [metadata["agent"]["position"]["x"], metadata["agent"]["position"]["y"], metadata["agent"]["position"]["z"]]

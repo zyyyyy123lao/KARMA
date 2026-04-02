@@ -1,9 +1,16 @@
 import openai
 import json
-# Replace 'your-api-key' with your actual OpenAI API key
-openai.api_key = 'your_key'
-similarity_flag_path = '/home/user/wzx/karma/logs/similarity_flag.json'
-messages_path = '/home/user/wzx/karma/logs/messages.json'
+import os
+
+API_KEY = "sk-rcEwLLwcwvD53Ffvi87E9HhLEL3yuSLey3zh4HZL3pKPldj9"
+BASE_URL = "https://api.chatanywhere.tech/v1"
+MODEL_NAME = "gpt-4o-mini-2024-07-18"
+
+# 定义基础路径
+BASE_PATH = '/root/autodl-tmp/KARMA'
+
+similarity_flag_path = os.path.join(BASE_PATH, 'logs/similarity_flag.json')
+messages_path = os.path.join(BASE_PATH, 'logs/messages.json')
 
 def load_file(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
@@ -42,7 +49,7 @@ api_generated_code = '''
 def new_function():
     print("This is a new function")
 '''
-target_file_path = 'task_functions.py'
+target_file_path = os.path.join(BASE_PATH, 'scripts/task_functions.py')
 line_number = 6
 insert_code_into_file(api_generated_code, target_file_path, line_number)
 
@@ -60,14 +67,14 @@ def load_similarity_flag():
 
 use_short_term_memory = load_similarity_flag()
        
-skills = load_file('/home/user/wzx/karma/prompts/skills.txt')
-skills_ex = load_file('/home/user/wzx/karma/resources/actions.py')
-role = load_file('/home/user/wzx/karma/prompts/role.txt')
-examples = load_file('/home/user/wzx/karma/prompts/examples.txt')
-emphasize = load_file('/home/user/wzx/karma/prompts/emphasize.txt')
-instruction = load_file('/home/user/wzx/karma/prompts/instruction.txt')
-short_term_memory = load_file('/home/user/wzx/karma/prompts/short_term_memory.txt')
-long_term_memory = load_file('/home/user/wzx/karma/prompts/long_term_memory.txt')
+skills = load_file(os.path.join(BASE_PATH, 'prompts/skills.txt'))
+skills_ex = load_file(os.path.join(BASE_PATH, 'resources/actions.py'))
+role = load_file(os.path.join(BASE_PATH, 'prompts/role.txt'))
+examples = load_file(os.path.join(BASE_PATH, 'prompts/examples.txt'))
+emphasize = load_file(os.path.join(BASE_PATH, 'prompts/emphasize.txt'))
+instruction = load_file(os.path.join(BASE_PATH, 'prompts/instruction.txt'))
+short_term_memory = load_file(os.path.join(BASE_PATH, 'prompts/short_term_memory.txt'))
+long_term_memory = load_file(os.path.join(BASE_PATH, 'prompts/long_term_memory.txt'))
 
 
 messages = [
@@ -86,9 +93,12 @@ if use_short_term_memory:
 with open(messages_path, 'w', encoding='utf-8') as file:
     json.dump(messages, file, ensure_ascii=False, indent=4)    
 
+if API_KEY and BASE_URL:
+    openai.api_key = API_KEY
+    openai.api_base = BASE_URL
+
 response = openai.ChatCompletion.create(
-    # model="gpt-3.5-turbo-1106",
-    model="gpt-4o-mini-2024-07-18",
+    model=MODEL_NAME,
     messages=messages,
     max_tokens=4096,
     temperature=0,
@@ -115,12 +125,12 @@ api_generated_code = '\n'.join(code_lines).strip()
 
 print(api_generated_code)
 
-target_file_path = 'task_functions.py'
+target_file_path = os.path.join(BASE_PATH, 'scripts/task_functions.py')
 line_number = 6 # 插入代码的行号
 insert_code_into_file(api_generated_code, target_file_path, line_number)
 
 # Save the function name to a file for later use
-file_path = '/home/user/wzx/karma/logs/generated_function_name.json'
+file_path = os.path.join(BASE_PATH, 'logs/generated_function_name.json')
 with open(file_path, 'w') as file:
     json.dump({"function_name": function_name}, file)
 

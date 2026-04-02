@@ -29,13 +29,19 @@ import sys
 import openai
 import base64
 import requests
-# sys.path.append('/home/user/wzx/karma/logs')
+
+API_KEY = "sk-rcEwLLwcwvD53Ffvi87E9HhLEL3yuSLey3zh4HZL3pKPldj9"
+BASE_URL = "https://api.chatanywhere.tech/v1"
+MODEL_NAME = "gpt-4o"
+# sys.path.append('/root/autodl-tmp/KARMA/logs')
 task_queue = queue.Queue()
 
+# 定义基础路径
+BASE_PATH = '/root/autodl-tmp/KARMA'
 
-directory_path = '/home/user/wzx/karma/memory/short_term'
-task_description_file_path = '/home/user/wzx/karma/logs/task_description.json'
-results_file_path = '/home/user/wzx/karma/memory/analysis_results.json'
+directory_path = os.path.join(BASE_PATH, 'memory/short_term')
+task_description_file_path = os.path.join(BASE_PATH, 'logs/task_description.json')
+results_file_path = os.path.join(BASE_PATH, 'memory/analysis_results.json')
 def load_task_description():
     try:
         with open(task_description_file_path, 'r', encoding='utf-8') as file:
@@ -54,11 +60,11 @@ def analyze_image(image_path, task):
 
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {api_key}"
+        "Authorization": f"Bearer {API_KEY}"
     }
 
     payload = {
-        "model": "gpt-4o",
+        "model": MODEL_NAME,
         "messages": [
             {"role": "system", "content": "As an image analysis expert, your task is to infer the state of objects in the image through step-by-step reasoning."},
             {"role": "user", "content": f"1. Provide a detailed description of this image.\n2. From the given task [Task], extract the relevant content from the first step's image description that pertains to the mentioned objects.\n3. Based on the object descriptions extracted in the second step, match each object to one of the following states: heated, cooked, sliced, cleaned, dirty, filled, used up, off, on, opened, closed, none.\n4. Summarize the results from step three in the following format: object: state. Please only output the content of the last step summary."},
@@ -73,7 +79,7 @@ def analyze_image(image_path, task):
         "max_tokens": 4096
     }
 
-    response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+    response = requests.post(f"{BASE_URL}/chat/completions", headers=headers, json=payload)
     return response.json()
 
 # Function to analyze images in a directory with a given task
@@ -141,7 +147,9 @@ def save_agent_view(image, save_path, filename):
         os.makedirs(save_path)
     cv2.imwrite(os.path.join(save_path, filename), image)
 
-def save_regions_to_json(regions, filename='/home/user/wzx/karma/memory/longterm_memory.json'):
+def save_regions_to_json(regions, filename=None):
+    if filename is None:
+        filename = os.path.join(BASE_PATH, 'memory/longterm_memory.json')
     data = {}
     for center, objects in regions.items():
         center_key = f'({center[0]:.2f}, {center[1]:.2f}, {center[2]:.2f})'
@@ -190,7 +198,7 @@ robots = [{'name': 'robot1', 'skills': ['GoToObject', 'OpenObject', 'CloseObject
 floor_no = 1
 
 no_robot = len(robots)
-objects_locations1 = '/home/user/wzx/karma/memory/objects_locations.json'
+objects_locations1 = os.path.join(BASE_PATH, 'memory/objects_locations.json')
 # initialize n agents into the scene
 c = Controller(
     agentMode="default",
@@ -207,8 +215,8 @@ c = Controller(
     renderInstanceSegmentation=False,
     agentCount=no_robot,
     # camera properties
-    width=1000,
-    height=1000,
+    width=900,
+    height=900,
     fieldOfView=90
 )
 multi_agent_event = c.step(action="Done") 
@@ -238,7 +246,7 @@ regions = get_static_objects_in_regions(c, centers)
 #保存long-term memory
 save_regions_to_json(regions)
 
-filename = '/home/user/wzx/karma/memory/longterm_memory.json'
+filename = os.path.join(BASE_PATH, 'memory/longterm_memory.json')
 sentences = extract_regions_from_json(filename)
 for sentence in sentences:
     print(sentence)
@@ -298,13 +306,13 @@ def exec_actions():
                 elif act['action'] == 'PutObject':
                     multi_agent_event = c.step(action="PutObject", objectId=act['objectId'], agentId=act['agent_id'], forceAction=True)
                     second_map(multi_agent_event)
-                    compare_objects_location('/home/user/wzx/karma/memory/objects_locations1.json', '/home/user/wzx/karma/memory/objects_locations2.json', '/home/user/wzx/karma/memory/memory3.json')
+                    compare_objects_location(os.path.join(BASE_PATH, 'memory/objects_locations1.json'), os.path.join(BASE_PATH, 'memory/objects_locations2.json'), os.path.join(BASE_PATH, 'memory/memory3.json'))
                     first_map(multi_agent_event)
                     #调整视角，用于拍摄short-term memory的图片
                     c.step(action='LookDown',degrees=20)
                     frame = multi_agent_event.frame
                     frame_bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-                    save_path = '/home/user/wzx/karma/memory/short_term'
+                    save_path = os.path.join(BASE_PATH, 'memory/short_term')
                     filename = f"short_memory_{image_counter}.png"
                     save_agent_view(frame_bgr, save_path, filename)
                     image_counter += 1
@@ -333,7 +341,7 @@ def exec_actions():
                     else:
                         print("Action failed:", multi_agent_event1['errorMessage'])
                     second_map(multi_agent_event1)
-                    compare_objects_location('/home/user/wzx/karma/memory/objects_locations1.json', '/home/user/wzx/karma/memory/objects_locations2.json', '/home/user/wzx/karma/memory/memory3.json')
+                    compare_objects_location(os.path.join(BASE_PATH, 'memory/objects_locations1.json'), os.path.join(BASE_PATH, 'memory/objects_locations2.json'), os.path.join(BASE_PATH, 'memory/memory3.json'))
                 elif act['action'] == 'Done':
                     multi_agent_event = c.step(action="Done")
               
@@ -664,7 +672,7 @@ def ExploreObject(robots, dest_obj, dest_obj2):
         
     print ("Reached: ", dest_obj)
     return exit_goto
-def GoToObject_next_time(robots, dest_obj, json_file='/home/user/wzx/karma/memory/objects_locations.json', json_file2='/home/user/wzx/karma/memory/objects_locations2.json'):
+def GoToObject_next_time(robots, dest_obj, json_file=None, json_file2=None):
     print ("Going to ", dest_obj)
     # check if robots is a list
 
@@ -677,6 +685,11 @@ def GoToObject_next_time(robots, dest_obj, json_file='/home/user/wzx/karma/memor
     prev_dist_goals = [10.0] * len(robots)
     count_since_update = [0] * len(robots)
     clost_node_location = [0] * len(robots)
+    
+    if json_file is None:
+        json_file = os.path.join(BASE_PATH, 'memory/objects_locations.json')
+    if json_file2 is None:
+        json_file2 = os.path.join(BASE_PATH, 'memory/objects_locations2.json')
     
     with open(json_file, 'r') as f:
         objects = json.load(f)
@@ -769,7 +782,7 @@ def GoToObject_next_time(robots, dest_obj, json_file='/home/user/wzx/karma/memor
     elif not reach_flag:
         print ("Failed to Reach: ", dest_obj)
     return reach_flag
-def GoToObject_with_memory(robots, dest_obj, json_file='/home/user/wzx/karma/memory/memory3.json'):
+def GoToObject_with_memory(robots, dest_obj, json_file=None):
     print ("Going to ", dest_obj)
     # check if robots is a list
 
@@ -781,6 +794,9 @@ def GoToObject_with_memory(robots, dest_obj, json_file='/home/user/wzx/karma/mem
     prev_dist_goals = [10.0] * len(robots)
     count_since_update = [0] * len(robots)
     clost_node_location = [0] * len(robots)
+    
+    if json_file is None:
+        json_file = os.path.join(BASE_PATH, 'memory/memory3.json')
     
     with open(json_file, 'r') as f:
         objects = json.load(f)
@@ -1037,7 +1053,7 @@ def add_task_to_queue(task_function, robot):
 def parse_and_execute_task(robot):
     try:
         # Load the generated function name from the .json file
-        with open('/home/user/wzx/karma/logs/generated_function_name.json', 'r') as file:
+        with open(os.path.join(BASE_PATH, 'logs/generated_function_name.json'), 'r') as file:
             data = json.load(file)
             function_name = data["function_name"]
         
@@ -1061,8 +1077,8 @@ def parse_task(robot, task_description):
 
 def run_scripts():
     try:
-        subprocess.run(['python', '/home/user/wzx/karma/scripts/query_with_short_term_memory.py'], check=True)
-        subprocess.run(['python', '/home/user/wzx/karma/scripts/llm_as_planner.py'], check=True)
+        subprocess.run(['python', os.path.join(BASE_PATH, 'scripts/query_with_short_term_memory.py')], check=True)
+        subprocess.run(['python', os.path.join(BASE_PATH, 'scripts/llm_as_planner.py')], check=True)
     except subprocess.CalledProcessError as e:
         print(f"An error occurred while running scripts: {e}")
 

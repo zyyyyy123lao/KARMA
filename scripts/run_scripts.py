@@ -1,4 +1,8 @@
 import subprocess
+import os
+
+# 定义基础路径
+BASE_PATH = '/root/autodl-tmp/KARMA'
 
 def run_script(script_path):
     try:
@@ -9,8 +13,8 @@ def run_script(script_path):
 
 # 先运行 llm_as_planner.py
 print("Running llm_as_planner.py...")
-run_script('/home/user/wzx/SMART-LLM1/scripts/llm_as_planner.py')
+run_script(os.path.join(BASE_PATH, 'scripts/llm_as_planner.py'))
 
 # 然后运行 execute_LLM_plan.py
 print("Running execute_LLM_plan.py...")
-run_script('/home/user/wzx/SMART-LLM1/scripts/execute_LLM_plan.py')
+run_script(os.path.join(BASE_PATH, 'scripts/execute_LLM_plan.py'))

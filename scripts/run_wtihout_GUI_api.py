@@ -22,11 +22,17 @@ from longterm_save import get_divided_positions
 from longterm_save import get_static_objects_in_regions
 from longterm_save import extract_regions_from_json
 import json
+
+# 定义基础路径
+BASE_PATH = '/root/autodl-tmp/KARMA'
+
 def save_agent_view(image, save_path, filename):
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     cv2.imwrite(os.path.join(save_path, filename), image)
-def save_regions_to_json(regions, filename='longterm_memory.json'):
+def save_regions_to_json(regions, filename=None):
+    if filename is None:
+        filename = os.path.join(BASE_PATH, 'memory/longterm_memory.json')
     data = {}
     for center, objects in regions.items():
         center_key = f'({center[0]:.2f}, {center[1]:.2f}, {center[2]:.2f})'
@@ -77,7 +83,7 @@ floor_no = 1
 # c = Controller( height=1000, width=1000)
 # c.reset("FloorPlan" + str(floor_no)) 
 no_robot = len(robots)
-objects_locations1 = './objects_locations.json'
+objects_locations1 = os.path.join(BASE_PATH, 'memory/objects_locations.json')
 # initialize n agents into the scene
 c = Controller(
     agentMode="default",
@@ -94,8 +100,8 @@ c = Controller(
     renderInstanceSegmentation=False,
     agentCount=no_robot,
     # camera properties
-    width=1000,
-    height=1000,
+    width=900,
+    height=900,
     fieldOfView=90
 )
 multi_agent_event = c.step(action="Done") 
@@ -126,7 +132,7 @@ regions = get_static_objects_in_regions(c, centers)
 #保存long-term memory
 save_regions_to_json(regions)
 
-filename = 'longterm_memory.json'
+filename = os.path.join(BASE_PATH, 'memory/longterm_memory.json')
 sentences = extract_regions_from_json(filename)
 for sentence in sentences:
     print(sentence)
@@ -186,13 +192,13 @@ def exec_actions():
                 elif act['action'] == 'PutObject':
                     multi_agent_event = c.step(action="PutObject", objectId=act['objectId'], agentId=act['agent_id'], forceAction=True)
                     second_map(multi_agent_event)
-                    compare_objects_location('objects_locations1.json', 'objects_locations2.json', 'memory3.json')
+                    compare_objects_location(os.path.join(BASE_PATH, 'memory/objects_locations1.json'), os.path.join(BASE_PATH, 'memory/objects_locations2.json'), os.path.join(BASE_PATH, 'memory/memory3.json'))
                     first_map(multi_agent_event)
                     #调整视角，用于拍摄short-term memory的图片
                     c.step(action='LookDown',degrees=20)
                     frame = multi_agent_event.frame
                     frame_bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-                    save_path = './short_term'
+                    save_path = os.path.join(BASE_PATH, 'memory/short_term')
                     filename = f"test_memory_{image_counter}.png"
                     save_agent_view(frame_bgr, save_path, filename)
                     image_counter += 1
@@ -222,7 +228,7 @@ def exec_actions():
                     else:
                         print("Action failed:", multi_agent_event1['errorMessage'])
                     second_map(multi_agent_event1)
-                    compare_objects_location('objects_locations1.json', 'objects_locations2.json', 'memory3.json')
+                    compare_objects_location(os.path.join(BASE_PATH, 'memory/objects_locations1.json'), os.path.join(BASE_PATH, 'memory/objects_locations2.json'), os.path.join(BASE_PATH, 'memory/memory3.json'))
                 elif act['action'] == 'Done':
                     multi_agent_event = c.step(action="Done")
                 elif act['action'] == 'CloseObject':
@@ -464,7 +470,7 @@ def explore(robots, dest_obj, dest_obj2):
         
     print ("Reached: ", dest_obj)
     return exit_goto
-def GoToObject_next_time(robots, dest_obj, json_file='objects_locations.json', json_file2='objects_locations2.json'):
+def GoToObject_next_time(robots, dest_obj, json_file=None, json_file2=None):
     print ("Going to ", dest_obj)
     # check if robots is a list
 
@@ -477,6 +483,11 @@ def GoToObject_next_time(robots, dest_obj, json_file='objects_locations.json', j
     prev_dist_goals = [10.0] * len(robots)
     count_since_update = [0] * len(robots)
     clost_node_location = [0] * len(robots)
+    
+    if json_file is None:
+        json_file = os.path.join(BASE_PATH, 'memory/objects_locations.json')
+    if json_file2 is None:
+        json_file2 = os.path.join(BASE_PATH, 'memory/objects_locations2.json')
     
     # # list of objects in the scene and their centers
     # objs = list([obj["objectId"] for obj in c.last_event.metadata["objects"]])
@@ -583,7 +594,7 @@ def GoToObject_next_time(robots, dest_obj, json_file='objects_locations.json', j
     elif not reach_flag:
         print ("Failed to Reach: ", dest_obj)
     return reach_flag
-def GoToObject_with_memory(robots, dest_obj, json_file='memory3.json'):
+def GoToObject_with_memory(robots, dest_obj, json_file=None):
     print ("Going to ", dest_obj)
     # check if robots is a list
 
@@ -596,6 +607,9 @@ def GoToObject_with_memory(robots, dest_obj, json_file='memory3.json'):
     prev_dist_goals = [10.0] * len(robots)
     count_since_update = [0] * len(robots)
     clost_node_location = [0] * len(robots)
+    
+    if json_file is None:
+        json_file = os.path.join(BASE_PATH, 'memory/memory3.json')
     
     # # list of objects in the scene and their centers
     # objs = list([obj["objectId"] for obj in c.last_event.metadata["objects"]])

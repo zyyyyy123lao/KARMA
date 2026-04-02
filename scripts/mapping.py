@@ -2,6 +2,10 @@ import json
 import numpy as np
 # import matplotlib.pyplot as plt
 from ai2thor.controller import Controller
+import os
+
+# 定义基础路径
+BASE_PATH = '/root/autodl-tmp/KARMA'
 
 def first_map(initial_event):
     # 遍历场景中的每个物体，获取它们的位置、类型和objectId
@@ -15,7 +19,7 @@ def first_map(initial_event):
         objects_locations.append(obj_info)
 
     # 将物体位置信息保存到 JSON 文件中
-    with open('/home/user/wzx/karma/memory/objects_locations1.json', 'w') as f:
+    with open(os.path.join(BASE_PATH, 'memory/objects_locations1.json'), 'w') as f:
         json.dump(objects_locations, f, indent=4)
 
     print("物体位置信息已保存到 'objects_locations1.json' 文件中")
@@ -34,7 +38,7 @@ def first_map_for_next_time(initial_event):
         objects_locations.append(obj_info)
 
     # 将物体位置信息保存到 JSON 文件中
-    with open('/home/user/wzx/karma/memory/objects_locations.json', 'w') as f:
+    with open(os.path.join(BASE_PATH, 'memory/objects_locations.json'), 'w') as f:
         json.dump(objects_locations, f, indent=4)
 
     print("物体位置信息及其边界框已保存到 'objects_locations1json' 文件中")
@@ -53,7 +57,7 @@ def second_map(event):
         objects_locations.append(obj_info)
 
     # 将物体位置信息保存到 JSON 文件中
-    with open('/home/user/wzx/karma/memory/objects_locations2.json', 'w') as f:
+    with open(os.path.join(BASE_PATH, 'memory/objects_locations2.json'), 'w') as f:
         json.dump(objects_locations, f, indent=4)
 
     print("物体位置信息已保存到 'objects_locations2.json' 文件中")
@@ -69,7 +73,6 @@ def second_map(event):
 #     x_range = np.arange(x_min, x_max + grid_size, grid_size)
 #     z_range = np.arange(z_min, z_max + grid_size, grid_size)
 #     grid = np.zeros((len(z_range), len(x_range)))
-
 #     # 标记可达位置
 #     for pos in reachable_positions:
 #         x_idx = np.searchsorted(x_range, pos['x'])
