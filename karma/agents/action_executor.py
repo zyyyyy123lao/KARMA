@@ -28,17 +28,18 @@ class ActionExecutor:
     def __init__(
         self,
         controller,
+        action_queue: List[Dict[str, Any]],
         agent_count: int = 1,
         save_frames: bool = True,
         short_term_memory_updater: Optional[Callable[[Any], None]] = None,
     ):
         self.controller = controller
+        self.action_queue = action_queue
         self.agent_count = agent_count
         self.save_frames = save_frames
         self.short_term_memory_updater = short_term_memory_updater
         self.paths = PathResolver()
 
-        self._queue: List[Dict[str, Any]] = []
         self._stop_event = threading.Event()
         self._thread: Optional[threading.Thread] = None
         self._img_counter = 0
@@ -66,7 +67,7 @@ class ActionExecutor:
 
     def enqueue(self, action: Dict[str, Any]) -> None:
         """Add an action to the execution queue."""
-        self._queue.append(action)
+        self.action_queue.append(action)
 
     def enqueue_nav(self, position: Dict[str, float], agent_id: int) -> None:
         """Convenience method to enqueue a navigation action."""
@@ -83,17 +84,17 @@ class ActionExecutor:
 
     def clear_queue(self) -> None:
         """Clear all pending actions from the queue."""
-        self._queue.clear()
+        self.action_queue.clear()
 
     @property
     def queue_size(self) -> int:
         """Current number of actions in the queue."""
-        return len(self._queue)
+        return len(self.action_queue)
 
     def wait_for_queue(self, timeout: Optional[float] = None) -> bool:
         """Wait until the action queue is empty."""
         start = time.time()
-        while self._queue:
+        while self.action_queue:
             if timeout and (time.time() - start) > timeout:
                 return False
             time.sleep(0.1)
@@ -174,7 +175,8 @@ class ActionExecutor:
 
         if action_name == "ObjectNavExpertAction":
             self._last_event = self.controller.step(
-                dict(action=action_name, position=act["position"], agentId=agent_id)
+                dict(action=action_name, position=act["position"], agentId=agent_id),
+                forceAction=True,
             )
             next_action = self._last_event.metadata.get("actionReturn")
             if next_action is not None:
@@ -316,8 +318,8 @@ class ActionExecutor:
             self._setup_output_dirs()
 
         while not self._stop_event.is_set():
-            if self._queue:
-                act = self._queue.pop(0)
+            if self.action_queue:
+                act = self.action_queue.pop(0)
                 try:
                     self._execute_action(act)
                     self._save_frames()

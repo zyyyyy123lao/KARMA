@@ -9,7 +9,6 @@ from typing import List, Optional, Tuple, Any
 
 import numpy as np
 from ai2thor.controller import Controller
-from ai2thor._quality_settings import QualitySettings
 
 from karma.config import AgentConfig
 from karma.constants import (
@@ -110,14 +109,22 @@ class AI2ThorController:
         """Execute an action and return the event.
 
         Args:
-            action: The AI2-THOR action name.
+            action: The AI2-THOR action name (str), or a dict containing
+                    action and other parameters (e.g. {"action": "Teleport", ...}).
             agentId: The agent ID for multi-agent scenarios.
             forceAction: Force the action to succeed if possible.
             **kwargs: Additional action parameters.
         """
-        self._last_event = self.controller.step(
-            action=action, agentId=agentId, forceAction=forceAction, **kwargs
-        )
+        # Support dict-based action (needed by _randomize_agent_positions for Teleport)
+        if isinstance(action, dict):
+            merged = dict(action)
+            if forceAction:
+                merged["forceAction"] = forceAction
+            self._last_event = self.controller.step(merged)
+        else:
+            self._last_event = self.controller.step(
+                action=action, agentId=agentId, forceAction=forceAction, **kwargs
+            )
         return self._last_event
 
     @property

@@ -2,8 +2,5 @@
 # Merge with default.yaml for full configuration
 
 api:
-  api_key: "${OPENAI_API_KEY}"
+  api_key: "sk-rcEwLLwcwvD53Ffvi87E9HhLEL3yuSLey3zh4HZL3pKPldj9"
   base_url: "https://api.chatanywhere.tech/v1"
-  model_name: "gpt-4o"
-  temperature: 0.0
-  max_tokens: 4096

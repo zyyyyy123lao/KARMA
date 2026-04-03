@@ -178,6 +178,10 @@ class KARMAApp:
             command=self._on_save_memory,
         ).pack(side=tk.LEFT, padx=5)
 
+        # Set initial focus to task entry
+        self._task_entry.focus_force()
+        self._task_entry.bind("<Return>", lambda _: self._on_start_task())
+
     # ─── Actions ─────────────────────────────────────────────────────────────
 
     def _on_start_task(self) -> None:
@@ -217,12 +221,20 @@ class KARMAApp:
 
         def worker():
             try:
+                from karma.planning import LLMPlanner
+                from karma.agents import Robot, AI2ThorController, ActionExecutor
+
                 planner = LLMPlanner(self.config)
-                from karma.agents import Robot, AI2ThorController
                 controller = AI2ThorController(self.config.agent)
                 controller.initialize()
+
+                # Create robot with ActionExecutor that saves/renders frames
                 robot = Robot(controller, name=self.config.agent.name)
+                robot._action_executor.save_frames = True
+
                 planner.plan_and_execute(task, robot)
+
+                robot._action_executor.stop()
                 controller.close()
             except Exception as e:
                 logger.error("Task execution failed: %s", e)

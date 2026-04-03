@@ -43,15 +43,17 @@ class Robot:
         self.config = config or {}
         self.controller = controller
 
-        # Action queue
+        # Action queue (shared between Robot and ActionExecutor)
         self.action_queue: List[Dict[str, Any]] = []
 
         # Initialize components
         self._action_executor = ActionExecutor(
             controller=controller,
+            action_queue=self.action_queue,
             agent_count=1,
             save_frames=False,
         )
+        self._action_executor.start()
         self._nav = NavigationController(
             controller=controller,
             reachable_positions=controller.reachable_positions,

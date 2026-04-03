@@ -5,8 +5,11 @@ providing execution and registration capabilities.
 """
 
 import importlib
+import importlib.util
 import logging
-from typing import Any, Callable, Dict, Optional
+import sys
+from pathlib import Path
+from typing import Any, Callable, Dict, Optional, Union
 
 logger = logging.getLogger("karma.planning.registry")
 
@@ -18,13 +21,27 @@ class TaskFunctionRegistry:
     and execution by name.
     """
 
-    def __init__(self, module_name: str = "task_functions"):
+    def __init__(self, module_name: str = "task_functions", file_path: Optional[Union[str, Path]] = None):
         self.module_name = module_name
         self._module = None
+        self._file_path = Path(file_path) if file_path else None
 
-    def reload(self) -> None:
-        """Reload the task_functions module."""
+    def reload(self, file_path: Optional[Union[str, Path]] = None) -> None:
+        """Reload the task_functions module.
+
+        Args:
+            file_path: Optional path to the task_functions.py file.
+        """
+        path = Path(file_path) if file_path else self._file_path
         try:
+            if path and path.exists():
+                spec = importlib.util.spec_from_file_location(self.module_name, path)
+                if spec and spec.loader:
+                    self._module = importlib.util.module_from_spec(spec)
+                    sys.modules[self.module_name] = self._module
+                    spec.loader.exec_module(self._module)
+                    logger.info("Reloaded task_functions module from %s", path)
+                    return
             self._module = importlib.import_module(self.module_name)
             importlib.reload(self._module)
             logger.info("Reloaded task_functions module")

@@ -5,12 +5,14 @@ loading a generated function, parsing task descriptions,
 and running the task with a robot agent.
 """
 
+from __future__ import annotations
+
 import json
 import logging
 import queue
 import threading
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Union
 
 logger = logging.getLogger("karma.planning.executor")
 
@@ -35,14 +37,15 @@ class TaskExecutor:
             self.registry = TaskFunctionRegistry()
         return self.registry
 
-    def add_task(self, function_name: str, robot: Any) -> None:
+    def add_task(self, function_name: str, robot: Any, file_path: Optional[str | Path] = None) -> None:
         """Add a task to the execution queue.
 
         Args:
             function_name: Name of the task function.
             robot: Robot instance to execute the task.
+            file_path: Optional path to task_functions.py.
         """
-        self._task_queue.put({"function_name": function_name, "robot": robot})
+        self._task_queue.put({"function_name": function_name, "robot": robot, "file_path": file_path})
 
     def load_task_from_file(self, file_path: str | Path) -> Optional[str]:
         """Load the generated function name from a JSON file.
@@ -77,7 +80,10 @@ class TaskExecutor:
             logger.error("No function name found in file")
             return False
 
-        self._registry.reload()
+        from karma.config import Config
+        base = Config.get_instance().paths.base
+        task_func_path = base / "scripts" / "task_functions.py"
+        self._registry.reload(str(task_func_path))
         return self._registry.execute(func_name, robot)
 
     def start_background(self) -> None:
@@ -111,7 +117,8 @@ class TaskExecutor:
                     break
                 func_name = task["function_name"]
                 robot = task["robot"]
-                self._registry.reload()
+                file_path = task.get("file_path")
+                self._registry.reload(file_path)
                 self._registry.execute(func_name, robot)
                 q.task_done()
             except queue.Empty:

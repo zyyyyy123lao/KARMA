@@ -4,6 +4,8 @@ Provides the high-level planning interface that coordinates
 task decomposition and execution.
 """
 
+from __future__ import annotations
+
 import json
 import logging
 from pathlib import Path
@@ -13,6 +15,7 @@ from karma.config import APIConfig, Config
 from karma.planning.task_decomposer import TaskDecomposer
 from karma.planning.executor import TaskExecutor
 from karma.planning.registry import TaskFunctionRegistry
+from karma.utils.path import PathResolver
 
 logger = logging.getLogger("karma.planning.planner")
 
@@ -61,8 +64,9 @@ class LLMPlanner:
             json.dump({"task_description": task_description}, f, indent=2)
 
         # Decompose task
+        path_resolver = PathResolver(base_path=self.config.paths.base)
         raw_code = self.decomposer.decompose(
-            task_description, self.config.paths
+            task_description, path_resolver
         )
         if not raw_code:
             logger.error("Task decomposition returned empty code")
@@ -70,7 +74,8 @@ class LLMPlanner:
 
         # Save generated code
         func_name = self.decomposer.save_generated_code(
-            raw_code, output_file
+            raw_code, output_file,
+            name_path=self.config.paths.generated_function_name,
         )
         if func_name is None:
             logger.error("Failed to save generated code")
@@ -92,7 +97,7 @@ class LLMPlanner:
             The generated Python code string.
         """
         return self.decomposer.decompose(
-            task_description, self.config.paths
+            task_description, PathResolver(base_path=self.config.paths.base)
         )
 
     def execute_generated(

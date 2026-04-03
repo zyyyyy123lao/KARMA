@@ -133,6 +133,10 @@ class PathResolver:
         return self._base / "ALFRED_L"
 
     @property
+    def resources(self) -> Path:
+        return self._base / "resources"
+
+    @property
     def history_tasks(self) -> Path:
         return self._base / "history_tasks"
 

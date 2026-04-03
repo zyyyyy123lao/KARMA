@@ -4,6 +4,8 @@ Provides text similarity using sentence embeddings and
 task similarity matching for the memory system.
 """
 
+from __future__ import annotations
+
 import json
 import logging
 from pathlib import Path

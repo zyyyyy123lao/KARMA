@@ -3,6 +3,8 @@
 Analyzes AI2-THOR frames using GPT-4o vision to infer object states.
 """
 
+from __future__ import annotations
+
 import base64
 import logging
 from pathlib import Path

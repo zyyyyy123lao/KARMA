@@ -137,6 +137,13 @@ class PathConfig:
     prompts: Path = field(default_factory=lambda: Path("prompts"))
     experience: Path = field(default_factory=lambda: Path("experience"))
     alfred: Path = field(default_factory=lambda: Path("ALFRED_L"))
+    history_tasks: Path = field(default_factory=lambda: Path("history_tasks"))
+    memory3: Path = field(default_factory=lambda: Path("memory/memory3.json"))
+    task_history: Path = field(default_factory=lambda: Path("history_tasks/task_history.json"))
+    task_description: Path = field(default_factory=lambda: Path("logs/task_description.json"))
+    similarity_flag: Path = field(default_factory=lambda: Path("logs/similarity_flag.json"))
+    generated_function_name: Path = field(default_factory=lambda: Path("logs/generated_function_name.json"))
+    messages: Path = field(default_factory=lambda: Path("logs/messages.json"))
 
     @classmethod
     def from_dict(cls, base_path: Path, data: Dict[str, Any]) -> "PathConfig":
@@ -150,6 +157,13 @@ class PathConfig:
             prompts=base_path / nested.get("prompts", "prompts"),
             experience=base_path / nested.get("experience", "experience"),
             alfred=base_path / nested.get("alfred", "ALFRED_L"),
+            history_tasks=base_path / nested.get("history_tasks", "history_tasks"),
+            memory3=base_path / nested.get("memory3", "memory/memory3.json"),
+            task_history=base_path / nested.get("task_history", "history_tasks/task_history.json"),
+            task_description=base_path / nested.get("task_description", "logs/task_description.json"),
+            similarity_flag=base_path / nested.get("similarity_flag", "logs/similarity_flag.json"),
+            generated_function_name=base_path / nested.get("generated_function_name", "logs/generated_function_name.json"),
+            messages=base_path / nested.get("messages", "logs/messages.json"),
         )
 
 

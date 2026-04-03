@@ -6,6 +6,12 @@ Usage:
     python -m scripts.main --gui
 """
 
+import os
+
+# Remove proxy env vars so API calls go direct
+for _k in ("http_proxy", "https_proxy", "HTTP_PROXY", "HTTPS_PROXY"):
+    os.environ.pop(_k, None)
+
 import argparse
 import logging
 import sys
@@ -102,10 +108,38 @@ def main():
     args = parse_args()
 
     # Load configuration
-    config_path = args.config or str(
-        Path(__file__).parent.parent / "configs" / "default.yaml"
-    )
-    config = Config.get_instance(config_path)
+    config_path = str(Path(__file__).parent.parent / "configs" / "default.yaml")
+    api_path = str(Path(__file__).parent.parent / "configs" / "api.yaml")
+
+    # Merge default + api overrides into a single dict before loading
+    import yaml
+    from karma.config import _resolve_dict_env_vars
+    merged = {}
+    for p in [config_path, api_path]:
+        if Path(p).exists():
+            with open(p) as f:
+                part = yaml.safe_load(f)
+            if part:
+                for k, v in part.items():
+                    if isinstance(v, dict) and k in merged:
+                        merged[k].update(v)
+                    else:
+                        merged[k] = v
+    merged = _resolve_dict_env_vars(merged)
+
+    config = Config.get_instance()
+    base_path = Path("/root/autodl-tmp/KARMA")
+    from karma.config import APIConfig, AgentConfig, MemoryConfig, PathConfig, LoggingConfig
+    if "api" in merged:
+        config.api = APIConfig.from_dict(merged.get("api", {}))
+    if "agent" in merged:
+        config.agent = AgentConfig.from_dict(merged)
+    if "memory" in merged:
+        config.memory = MemoryConfig.from_dict(merged)
+    if "paths" in merged:
+        config.paths = PathConfig.from_dict(base_path, merged)
+    if "logging" in merged:
+        config.logging = LoggingConfig.from_dict(merged)
 
     # Override scene if provided
     if args.scene:
