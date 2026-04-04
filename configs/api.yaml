@@ -2,5 +2,5 @@
 # Merge with default.yaml for full configuration
 
 api:
-  api_key: "sk-rcEwLLwcwvD53Ffvi87E9HhLEL3yuSLey3zh4HZL3pKPldj9"
+  api_key: ""
   base_url: "https://api.chatanywhere.tech/v1"
