@@ -18,9 +18,16 @@ def PickupObject(robot, target: str) -> bool:
     return robot.pickup(target)
 
 
-def PutObject(robot, receptacle: str) -> bool:
-    """Put the held object into a receptacle."""
-    return robot.put(receptacle)
+def PutObject(robot, target_or_receptacle: str, receptacle: str = None) -> bool:
+    """Put the held object into a receptacle.
+
+    Two calling conventions are supported:
+      PutObject(robot, 'Sink')               — put whatever is held into Sink
+      PutObject(robot, 'Apple', 'Sink')       — explicitly name the object + receptacle
+    """
+    if receptacle is not None:
+        return robot.put_explicit(target_or_receptacle, receptacle)
+    return robot.put(target_or_receptacle)
 
 
 def Explore(robot, target: str, positions: List[Tuple[float, float, float]]) -> int:

@@ -4,8 +4,8 @@ Example 1 Decomposition:
 # Sequence subtasks:
 # SubTask 1: Find and pick up the Apple. (Skills Required: Explore, GoToObject, PickupObject)
 #   -> The Apple location is unknown; must explore to find it first.
-# SubTask 2: Wash the Apple in the sink. (Skills Required: GoToObject, SwitchOn, CleanObject)
-#   -> Robot must turn on the faucet (water) before cleaning.
+# SubTask 2: Wash the Apple in the sink. (Skills Required: GoToObject, PutObject, SwitchOn, CleanObject)
+#   -> Robot must place apple in sink basin, then turn on faucet, then clean.
 # CODE
 def wash_apple(robot):
     # ── SubTask 1: Find and pick up the Apple ──
@@ -29,9 +29,11 @@ def wash_apple(robot):
     # ── SubTask 2: Wash the Apple in the Sink ──
     # Step 4: Navigate to the Sink
     GoToObject(robot, 'Sink')
-    # Step 5: Turn on the faucet (water must be running to wash)
+    # Step 5: Place the Apple into the Sink basin (required before cleaning)
+    PutObject(robot, 'Apple', 'Sink')
+    # Step 6: Turn on the faucet (water must be running to wash)
     SwitchOn(robot, 'Faucet')
-    # Step 6: Clean/Wash the held Apple under running water
+    # Step 7: Clean/Wash the Apple under running water
     CleanObject(robot, 'Apple')
 
 
@@ -40,7 +42,7 @@ Example 2 Decomposition:
 # GENERAL TASK DECOMPOSITION
 # Sequence subtasks:
 # SubTask 1: Throw the Fork in the trash. (Skills Required: Explore, PickupObject, ThrowObject)
-# SubTask 2: Wash the Fork in the sink. (Skills Required: Explore, GoToObject, SwitchOn, CleanObject)
+# SubTask 2: Wash the Fork in the sink. (Skills Required: Explore, GoToObject, SwitchOn, PutObject, CleanObject)
 # CODE
 def throw_fork_in_trash_and_wash_fork_in_sink(robot):
     # ── SubTask 1: Throw the Fork in the trash ──
@@ -74,6 +76,7 @@ def throw_fork_in_trash_and_wash_fork_in_sink(robot):
     GoToObject(robot, 'Fork')
     PickupObject(robot, 'Fork')
     GoToObject(robot, 'Sink')
+    PutObject(robot, 'Fork', 'Sink')
     SwitchOn(robot, 'Faucet')
     CleanObject(robot, 'Fork')
 

@@ -4,6 +4,7 @@ Provides a skill registry and base class for agent capabilities.
 """
 
 import logging
+import re
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, List, Optional, Type
 
@@ -59,8 +60,7 @@ class PickupObjectSkill(Skill):
         agent_id = self.robot.agent_id
         objs = self.robot.controller.last_event.metadata["objects"]
         for obj in objs:
-            import re as _re
-            if _re.match(target, obj["objectId"]):
+            if re.match(target, obj["objectId"]):
                 self.robot.enqueue_action({
                     "action": "PickupObject",
                     "objectId": obj["objectId"],
@@ -77,18 +77,32 @@ class PutObjectSkill(Skill):
     name = "PutObject"
     description = "Put the held object into a receptacle."
 
-    def execute(self, receptacle: str, **kwargs) -> bool:
+    def execute(self, receptacle: str = None, target: str = None, **kwargs) -> bool:
         agent_id = self.robot.agent_id
         objs = self.robot.controller.last_event.metadata["objects"]
         for obj in objs:
-            import re as _re
-            if _re.match(receptacle, obj["objectId"]):
+            if receptacle is not None and re.match(receptacle, obj["objectId"]):
                 self.robot.enqueue_action({
                     "action": "PutObject",
                     "objectId": obj["objectId"],
                     "agent_id": agent_id,
                 })
                 return True
+        # Fallback: if no receptacle match, try to find and put the target object
+        if target is not None:
+            inventory = self.robot.controller.last_event.metadata.get(
+                "inventoryObjects", []
+            )
+            for inv_obj in inventory:
+                if re.match(target, inv_obj["objectId"]):
+                    for obj in objs:
+                        if re.match(receptacle or "Sink", obj["objectId"]):
+                            self.robot.enqueue_action({
+                                "action": "PutObject",
+                                "objectId": obj["objectId"],
+                                "agent_id": agent_id,
+                            })
+                            return True
         logger.error("PutObject: receptacle '%s' not found", receptacle)
         return False
 
@@ -103,8 +117,7 @@ class SwitchOnSkill(Skill):
         agent_id = self.robot.agent_id
         objs = self.robot.controller.last_event.metadata["objects"]
         for obj in objs:
-            import re as _re
-            if _re.match(target, obj["objectId"]):
+            if re.match(target, obj["objectId"]):
                 self.robot.enqueue_action({
                     "action": "ToggleObjectOn",
                     "objectId": obj["objectId"],
@@ -125,8 +138,7 @@ class SwitchOffSkill(Skill):
         agent_id = self.robot.agent_id
         objs = self.robot.controller.last_event.metadata["objects"]
         for obj in objs:
-            import re as _re
-            if _re.match(target, obj["objectId"]):
+            if re.match(target, obj["objectId"]):
                 self.robot.enqueue_action({
                     "action": "ToggleObjectOff",
                     "objectId": obj["objectId"],
@@ -147,8 +159,7 @@ class OpenObjectSkill(Skill):
         agent_id = self.robot.agent_id
         objs = self.robot.controller.last_event.metadata["objects"]
         for obj in objs:
-            import re as _re
-            if _re.match(target, obj["objectId"]):
+            if re.match(target, obj["objectId"]):
                 self.robot.enqueue_action({
                     "action": "OpenObject",
                     "objectId": obj["objectId"],
@@ -169,8 +180,7 @@ class CloseObjectSkill(Skill):
         agent_id = self.robot.agent_id
         objs = self.robot.controller.last_event.metadata["objects"]
         for obj in objs:
-            import re as _re
-            if _re.match(target, obj["objectId"]):
+            if re.match(target, obj["objectId"]):
                 self.robot.enqueue_action({
                     "action": "CloseObject",
                     "objectId": obj["objectId"],
@@ -191,8 +201,7 @@ class SliceObjectSkill(Skill):
         agent_id = self.robot.agent_id
         objs = self.robot.controller.last_event.metadata["objects"]
         for obj in objs:
-            import re as _re
-            if _re.match(target, obj["objectId"]):
+            if re.match(target, obj["objectId"]):
                 self.robot.enqueue_action({
                     "action": "SliceObject",
                     "objectId": obj["objectId"],
@@ -211,17 +220,29 @@ class CleanObjectSkill(Skill):
 
     def execute(self, target: str, **kwargs) -> bool:
         agent_id = self.robot.agent_id
+        # First check if the object is being held (in inventory)
+        inventory = self.robot.controller.last_event.metadata.get(
+            "inventoryObjects", []
+        )
+        for inv_obj in inventory:
+            if re.match(target, inv_obj["objectId"]):
+                self.robot.enqueue_action({
+                    "action": "CleanObject",
+                    "objectId": inv_obj["objectId"],
+                    "agent_id": agent_id,
+                })
+                return True
+        # Fall back to objects in the scene
         objs = self.robot.controller.last_event.metadata["objects"]
         for obj in objs:
-            import re as _re
-            if _re.match(target, obj["objectId"]):
+            if re.match(target, obj["objectId"]):
                 self.robot.enqueue_action({
                     "action": "CleanObject",
                     "objectId": obj["objectId"],
                     "agent_id": agent_id,
                 })
                 return True
-        logger.error("CleanObject: target '%s' not found", target)
+        logger.error("CleanObject: target '%s' not found in inventory or scene", target)
         return False
 
 

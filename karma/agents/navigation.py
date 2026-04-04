@@ -136,6 +136,48 @@ def find_object_by_type(
     return None
 
 
+def _queue_drain_waiter(action_queue: List[Dict[str, Any]], timeout: float = 600.0) -> None:
+    """Block the calling thread until action_queue is empty.
+
+    Used after enqueueing navigation actions so the caller knows the robot
+    has physically arrived before the next task-function step runs.
+    """
+    elapsed = 0.0
+    warned_30s = False
+    warned_60s = False
+    warned_120s = False
+    while action_queue:
+        time.sleep(0.05)
+        elapsed += 0.05
+        if elapsed >= 30.0 and elapsed < 30.5 and not warned_30s:
+            warned_30s = True
+            logger.warning(
+                "action_queue still has %d items after %.0fs — "
+                "navigation may be slow or executor is stalled",
+                len(action_queue), elapsed,
+            )
+        if elapsed >= 60.0 and elapsed < 60.5 and not warned_60s:
+            warned_60s = True
+            logger.warning(
+                "action_queue still has %d items after %.0fs — "
+                "navigation may be slow",
+                len(action_queue), elapsed,
+            )
+        if elapsed >= 120.0 and elapsed < 120.5 and not warned_120s:
+            warned_120s = True
+            logger.warning(
+                "action_queue still has %d items after %.0fs — "
+                "navigation may be stuck",
+                len(action_queue), elapsed,
+            )
+        if elapsed >= timeout:
+            logger.error(
+                "Queue drain timeout after %.0fs; %d items still pending",
+                timeout, len(action_queue),
+            )
+            break
+
+
 class NavigationController:
     """Stateful navigation controller that manages action queues."""
 
@@ -248,6 +290,7 @@ class NavigationController:
             })
 
         logger.info("Reached: %s", dest_pattern)
+        _queue_drain_waiter(self.action_queue)
         return True
 
     def goto_object_with_memory(
@@ -332,6 +375,7 @@ class NavigationController:
         })
 
         logger.info("Reached: %s", dest_pattern)
+        _queue_drain_waiter(self.action_queue)
         return True
 
     def explore_object(
@@ -430,6 +474,7 @@ class NavigationController:
             })
             return True
 
+        _queue_drain_waiter(self.action_queue)
         return False
 
     def explore(

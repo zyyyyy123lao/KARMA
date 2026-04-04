@@ -129,6 +129,14 @@ class Robot:
             self._held_object = None
         return result
 
+    def put_explicit(self, target: str, receptacle: str) -> bool:
+        """Put a named object into a named receptacle.
+
+        Unlike put(), both the object and the receptacle are specified explicitly.
+        """
+        skill = self._skill_registry.create_skill("PutObject", self)
+        return skill.execute(target=target, receptacle=receptacle)
+
     def switch_on(self, target: str) -> bool:
         """Switch on a toggleable object."""
         skill = self._skill_registry.create_skill("SwitchOn", self)
