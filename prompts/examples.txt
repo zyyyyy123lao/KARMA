@@ -1,97 +1,115 @@
 Example 1 Decomposition:
+# Task: wash apple in sink
 # GENERAL TASK DECOMPOSITION
-# Independent subtasks:
-# SubTask 1: wash fork in sink. (Skills Required: GoToObject, SwitchOff)
-# We should perform subtask1 first.
+# Sequence subtasks:
+# SubTask 1: Find and pick up the Apple. (Skills Required: Explore, GoToObject, PickupObject)
+#   -> The Apple location is unknown; must explore to find it first.
+# SubTask 2: Wash the Apple in the sink. (Skills Required: GoToObject, SwitchOn, CleanObject)
+#   -> Robot must turn on the faucet (water) before cleaning.
 # CODE
-def wash_fork_in_sink(robot):
-    # 0: SubTask 1: wash fork in sink
-    # 1: go to the fork (because you know the position of fork, and fork is in the countertop).
-    goto(robot, 'Fork')
-    # 2: Pick up the fork.
-    PickupObject(robot, 'Fork')
-    # 4: Explore the Sink.
-    goto(robot, 'Sink')
-    # 5: wash the fork in the Sink.
-    Clean(robot, 'Fork')
+def wash_apple(robot):
+    # ── SubTask 1: Find and pick up the Apple ──
+    available_positions = [
+        (1.25, 0.0, -1.75),   # ShelvingUnit
+        (-1.0, 0.0, 0.0),     # CounterTop
+        (-0.25, 0.0, -1.5),   # CounterTop
+        (-1.0, 0.0, -1.5),    # CounterTop near Sink
+        (-2.0, 0.0, 2.0),      # Fridge
+        (0.5, 0.0, 1.5),
+        (1.5, 0.0, -0.25),
+        (1.5, 0.0, 1.0),
+    ]
+    # Step 1: Explore to find the Apple
+    Explore(robot, 'Apple', available_positions)
+    # Step 2: Navigate directly to the Apple once found
+    GoToObject(robot, 'Apple')
+    # Step 3: Pick up the Apple
+    PickupObject(robot, 'Apple')
+
+    # ── SubTask 2: Wash the Apple in the Sink ──
+    # Step 4: Navigate to the Sink
+    GoToObject(robot, 'Sink')
+    # Step 5: Turn on the faucet (water must be running to wash)
+    SwitchOn(robot, 'Faucet')
+    # Step 6: Clean/Wash the held Apple under running water
+    CleanObject(robot, 'Apple')
+
 
 Example 2 Decomposition:
+# Task: throw fork in trash and wash fork in sink
 # GENERAL TASK DECOMPOSITION
 # Sequence subtasks:
 # SubTask 1: Throw the Fork in the trash. (Skills Required: Explore, PickupObject, ThrowObject)
-# Since the previous tasks involved throwing utensils into the trash, let's assume that the spatula might also be in the trash if it was thrown away. If the spatula's position changed due to previous tasks, we should consider the new location.
-# SubTask 2: Wash the Fork in the sink. (Skills Required: GoToObject, PickupObject)
-# We can execute SubTask 1 first and then SubTask 2.
-
+# SubTask 2: Wash the Fork in the sink. (Skills Required: Explore, GoToObject, SwitchOn, CleanObject)
 # CODE
 def throw_fork_in_trash_and_wash_fork_in_sink(robot):
-    # 0: SubTask 1: Throw the Fork in the trash
-    # 1: Explore the Fork.
+    # ── SubTask 1: Throw the Fork in the trash ──
     available_positions = [
-        (1.25, 0, -1.75),
-        (-1.0, 0, 0),
-        (-0.25, 0, -1.5),
-        (-1.0, 0, -1.5),
-        (0.5, 0, 1.5),
-        (1.5, 0, -0.25),
-        (1.5, 0, 1.0),
-        (-2.0, 0, 2.0)
+        (1.25, 0.0, -1.75),
+        (-1.0, 0.0, 0.0),
+        (-0.25, 0.0, -1.5),
+        (-1.0, 0.0, -1.5),
+        (0.5, 0.0, 1.5),
+        (1.5, 0.0, -0.25),
+        (1.5, 0.0, 1.0),
+        (-2.0, 0.0, 2.0),
     ]
-    Explore(robot,'Fork',available_positions)
-    # 2: Pick up the Fork.
-    PickupObject(robot,'Fork')
-    # 3: Explore the GarbageCan.
-    goto(robot,'GarbageCan')
-    # 4: Throw the Fork in the GarbageCan.
-    ThrowObject(robot,'Fork', 'GarbageCan')
-    # 5: SubTask 2: Wash the Fork in the sink
-    # 6: Go to the GarbageCan.
-    goto(robot,'Fork')
-    # 7: Pick up the Fork.
-    PickupObject(robot,'Fork')
-    # 8: Explore the Sink.
-    goto(robot,'Sink')
-    # 9: Wash the Fork in the Sink.
-    Clean(robot,'Fork')
+    Explore(robot, 'Fork', available_positions)
+    PickupObject(robot, 'Fork')
+    GoToObject(robot, 'GarbageCan')
+    ThrowObject(robot, 'Fork')
+
+    # ── SubTask 2: Wash the Fork in the sink ──
+    available_positions2 = [
+        (1.25, 0.0, -1.75),
+        (-1.0, 0.0, 0.0),
+        (-0.25, 0.0, -1.5),
+        (-1.0, 0.0, -1.5),
+        (0.5, 0.0, 1.5),
+        (1.5, 0.0, -0.25),
+        (1.5, 0.0, 1.0),
+        (-2.0, 0.0, 2.0),
+    ]
+    Explore(robot, 'Fork', available_positions2)
+    GoToObject(robot, 'Fork')
+    PickupObject(robot, 'Fork')
+    GoToObject(robot, 'Sink')
+    SwitchOn(robot, 'Faucet')
+    CleanObject(robot, 'Fork')
+
 
 Example 3 Decomposition:
-# EXAMPLE 1 - Task Description: Turn off the light and turn on the faucet.
+# Task: turn off light and turn on faucet
 # GENERAL TASK DECOMPOSITION
 # Independent subtasks:
-# SubTask 1: Turn off the light. (Skills Required: ExploreObject, SwitchOff)
-# SubTask 2: Turn on the faucet. (Skills Required: ExploreObject, SwitchOff)
-# We should perform subtask1 first and then subtask2.
-
+# SubTask 1: Turn off the light. (Skills Required: Explore, SwitchOff)
+# SubTask 2: Turn on the faucet. (Skills Required: Explore, SwitchOn)
 # CODE
 def turn_off_light_and_turn_on_faucet(robot):
-    # 0: SubTask 1: Turn off the light
-    # 1: Explore the LightSwitch.
+    # ── SubTask 1: Turn off the light ──
     available_positions = [
-        (1.25, 0, -1.75),
-        (-1.0, 0, 0),
-        (-0.25, 0, -1.5),
-        (-1.0, 0, -1.5),
-        (0.5, 0, 1.5),
-        (1.5, 0, -0.25),
-        (1.5, 0, 1.0),
-        (-2.0, 0, 2.0)
+        (1.25, 0.0, -1.75),
+        (-1.0, 0.0, 0.0),
+        (-0.25, 0.0, -1.5),
+        (-1.0, 0.0, -1.5),
+        (0.5, 0.0, 1.5),
+        (1.5, 0.0, -0.25),
+        (1.5, 0.0, 1.0),
+        (-2.0, 0.0, 2.0),
     ]
-    Explore(robot,'LightSwitch', available_positions)
-    # 2: Switch off the LightSwitch.
-    SwitchOff(robot,'LightSwitch')
-    # 3: SubTask 2: Turn on the faucet
-    # 4: Explore the Faucet.
-    available_positions = [
-        (1.25, 0, -1.75),
-        (-1.0, 0, 0),
-        (-0.25, 0, -1.5),
-        (-1.0, 0, -1.5),
-        (0.5, 0, 1.5),
-        (1.5, 0, -0.25),
-        (1.5, 0, 1.0),
-        (-2.0, 0, 2.0)
-    ]
-    Explore(robot,'Faucet', available_positions)
-    # 5: Switch on the Faucet.
-    SwitchOn(robot,'Faucet')
+    Explore(robot, 'LightSwitch', available_positions)
+    SwitchOff(robot, 'LightSwitch')
 
+    # ── SubTask 2: Turn on the faucet ──
+    available_positions2 = [
+        (1.25, 0.0, -1.75),
+        (-1.0, 0.0, 0.0),
+        (-0.25, 0.0, -1.5),
+        (-1.0, 0.0, -1.5),
+        (0.5, 0.0, 1.5),
+        (1.5, 0.0, -0.25),
+        (1.5, 0.0, 1.0),
+        (-2.0, 0.0, 2.0),
+    ]
+    Explore(robot, 'Faucet', available_positions2)
+    SwitchOn(robot, 'Faucet')

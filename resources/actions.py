@@ -13,15 +13,17 @@ def GoToObject(robots, dest_obj):
     pass
     
 def PickupObject(robot, pick_obj):
-    # pickup the object. 
+    # pickup the object.
     # The function captures only those objects that are within the agent's line of sight.
-    
-    # Example: 
-    # <Instruction> Go get the apple on the kitchen counter. 
-    # Python script: 
-    # Explore(robot,'CounterTop')
-    # GoToObject(robot,'CounterTop')
-    # PickupObject(robot,'CounterTop')        
+    # The agent must first find the object (via Explore/GoToObject) before picking it up.
+    # The argument is the exact object name (e.g. 'Apple', not 'CounterTop').
+
+    # Example:
+    # <Instruction> Go get the apple on the kitchen counter.
+    # Python script:
+    # Explore(robot, 'Apple', available_positions)
+    # GoToObject(robot, 'Apple')
+    # PickupObject(robot, 'Apple')
     pass
 
 def PutObject(robot, put_obj, recp): 
@@ -37,21 +39,27 @@ def PutObject(robot, put_obj, recp):
     pass
 
 def SwitchOn(robot, sw_obj):
-    # Turn on a switch. 
-    
-    # Example: 
-    # <Instruction> Turn on the light. 
-    # Python script: 
-    # SwitchOn(robot,'LightSwitch') 
+    # Turn on a switch.
+    # The agent must be adjacent to the object before calling SwitchOn.
+    # Common uses: Faucet (to run water for washing), LightSwitch, Microwave, Stove.
+
+    # Example:
+    # <Instruction> Turn on the faucet to wash the apple.
+    # Python script:
+    # GoToObject(robot, 'Sink')
+    # SwitchOn(robot, 'Faucet')
     pass
 
 def SwitchOff(robot, sw_obj):
-    # Turn off a switch. 
-    
-    # Example: 
-    # <Instruction> Turn off the light. 
-    # Python script: 
-    # SwitchOn(robot,'LightSwitch') 
+    # Turn off a switch.
+    # The agent must be adjacent to the object before calling SwitchOff.
+
+    # Example:
+    # <Instruction> Turn off the light.
+    # Python script:
+    # Explore(robot, 'LightSwitch', available_positions)
+    # GoToObject(robot, 'LightSwitch')
+    # SwitchOff(robot, 'LightSwitch')
     pass
 
 def OpenObject(robot, sw_obj):

@@ -42,6 +42,12 @@ def CleanObject(robot, target: str) -> bool:
     return robot.clean(target)
 
 
+# Aliases for LLM variation tolerance
+Clean = CleanObject
+Wash = CleanObject
+WashObject = CleanObject
+
+
 def SwitchOn(robot, target: str) -> bool:
     """Switch on a toggleable object."""
     return robot.switch_on(target)

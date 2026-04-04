@@ -58,10 +58,19 @@ class ActionExecutor:
         logger.info("Action executor started")
 
     def stop(self) -> None:
-        """Stop the background thread and wait for completion."""
+        """Request shutdown: worker drains the queue, then exits.
+
+        The worker must NOT exit on stop while items remain — otherwise
+        SwitchOn/CleanObject etc. are dropped (see _run loop).
+        """
+        n = len(self.action_queue)
+        logger.info("stop() requested; worker will drain %d queued action(s) then exit", n)
         self._stop_event.set()
         if self._thread is not None:
-            self._thread.join(timeout=5.0)
+            # Navigation can enqueue many steps; allow ample time
+            self._thread.join(timeout=600.0)
+            if self._thread.is_alive():
+                logger.warning("Action executor thread did not stop within timeout")
             self._thread = None
         logger.info("Action executor stopped")
 
@@ -317,7 +326,9 @@ class ActionExecutor:
         if self.save_frames:
             self._setup_output_dirs()
 
-        while not self._stop_event.is_set():
+        # Exit only when stop is requested AND queue is empty — never drop
+        # pending actions because _stop_event was set mid-run.
+        while True:
             if self.action_queue:
                 act = self.action_queue.pop(0)
                 try:
@@ -326,6 +337,8 @@ class ActionExecutor:
                     self._img_counter += 1
                 except Exception as e:
                     logger.error("Action execution error: %s", e)
+            elif self._stop_event.is_set():
+                break
             else:
                 time.sleep(0.05)
 

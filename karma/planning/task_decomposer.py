@@ -78,8 +78,37 @@ class TaskDecomposer:
         long_term = read_text(paths.long_term_memory_prompt)
         messages.append({"role": "user", "content": long_term})
 
+        # CRITICAL: available action wrapper functions (authoritative list)
+        # The generated code MUST only call functions defined in scripts/action_wrappers.py.
+        # Never invent function names not listed here.
+        import inspect
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "action_wrappers",
+            paths.base / "scripts" / "action_wrappers.py",
+        )
+        wrapper_src = ""
+        if spec and spec.loader:
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            wrapper_funcs = [
+                name for name, obj in vars(mod).items()
+                if callable(obj) and not name.startswith("_")
+            ]
+            wrapper_src = (
+                "AVAILABLE FUNCTIONS (use ONLY these names from action_wrappers.py):\n"
+                + "\n".join(f"  - {fn}" for fn in sorted(wrapper_funcs))
+                + "\n"
+            )
+        messages.append({"role": "system", "content": wrapper_src})
+
         # Task instruction
-        instruction = f"Please help me decompose the following tasks: {task_description}. Please output only the generated code."
+        instruction = (
+            f"Please help me decompose the following task: {task_description}.\n"
+            f"You MUST only call functions listed in the AVAILABLE FUNCTIONS above.\n"
+            f"Do NOT invent or rename functions (e.g. use 'CleanObject', NOT 'Clean' or 'Wash').\n"
+            f"Please output only the generated Python code."
+        )
         messages.append({"role": "user", "content": instruction})
 
         return messages
