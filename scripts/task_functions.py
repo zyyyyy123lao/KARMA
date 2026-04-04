@@ -8,14 +8,14 @@ from scripts.action_wrappers import *
 def wash_apple(robot):
     # ── SubTask 1: Find and pick up the Apple ──
     available_positions = [
-        (-2.0, 0.0, 2.0),     # Fridge, often used for storing fruits
-        (0.5, 0.0, 1.5),      # Empty area, unlikely but check
-        (-0.25, 0.0, -1.5),   # CounterTop (often used in kitchens)
-        (-1.0, 0.0, 0.0),     # CounterTop (often used in kitchens)
+        (-1.0, 0.0, 0.0),     # CounterTop with multiple drawers
+        (-0.25, 0.0, -1.5),   # CounterTop near Microwave and Stove
         (-1.0, 0.0, -1.5),    # CounterTop near Sink
-        (1.25, 0.0, -1.75),   # ShelvingUnit
-        (1.5, 0.0, -0.25),    # Unlikely for Apple
-        (1.5, 0.0, 1.0),      # Unlikely for Apple
+        (-2.0, 0.0, 2.0),     # Fridge and GarbageCan area
+        (0.5, 0.0, 1.5),
+        (1.25, 0.0, -1.75),   # Shelving Unit location
+        (1.5, 0.0, -0.25),    # LightSwitch location
+        (1.5, 0.0, 1.0),
     ]
     # Step 1: Explore to find the Apple
     Explore(robot, 'Apple', available_positions)
