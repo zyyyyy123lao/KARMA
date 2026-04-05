@@ -8,3 +8,5 @@ USER=root /opt/TurboVNC/bin/vncserver :1 \
   -rfbauth /root/.vnc/passwd \
   -fp /usr/share/fonts/X11/misc/,/usr/share/fonts \
   -rfbport 6006
+
+export DISPLAY=:1

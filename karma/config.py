@@ -40,6 +40,7 @@ class APIConfig:
     api_key: str = ""
     base_url: str = "https://api.chatanywhere.tech/v1"
     model_name: str = "gpt-4o"
+    embedding_model_name: str = "text-embedding-3-large"
     temperature: float = 0.0
     max_tokens: int = 4096
 
@@ -49,6 +50,7 @@ class APIConfig:
             api_key=_resolve_env_var(data.get("api_key", "")),
             base_url=data.get("base_url", "https://api.chatanywhere.tech/v1"),
             model_name=data.get("model_name", "gpt-4o"),
+            embedding_model_name=data.get("embedding_model_name", "text-embedding-3-large"),
             temperature=float(data.get("temperature", 0.0)),
             max_tokens=int(data.get("max_tokens", 4096)),
         )
@@ -109,6 +111,9 @@ class MemoryConfig:
     short_term_max_size: int = 100
     similarity_threshold: float = 0.3
     position_change_threshold: float = 0.3
+    short_term_recall_top_k: int = 3
+    long_term_max_areas: int = 3
+    embedding_model: str = "text-embedding-3-large"
     exploration_positions: List[List[float]] = field(default_factory=lambda: [
         [1.25, 0.0, -1.75], [-1.0, 0.0, 0.0], [-0.25, 0.0, -1.5],
         [-1.0, 0.0, -1.5], [0.5, 0.0, 1.5], [1.5, 0.0, -0.25],
@@ -123,6 +128,9 @@ class MemoryConfig:
             short_term_max_size=int(nested.get("short_term_max_size", 100)),
             similarity_threshold=float(nested.get("similarity_threshold", 0.3)),
             position_change_threshold=float(nested.get("position_change_threshold", 0.3)),
+            short_term_recall_top_k=int(nested.get("short_term_recall_top_k", 3)),
+            long_term_max_areas=int(nested.get("long_term_max_areas", 3)),
+            embedding_model=nested.get("embedding_model", "text-embedding-3-large"),
             exploration_positions=positions if positions else cls().exploration_positions,
         )
 

@@ -5,8 +5,9 @@
 # Sensitive values should be provided via environment variables
 api:
   api_key: "${OPENAI_API_KEY}"
-  base_url: "https://api.chatanywhere.tech/v1"
+  base_url: ""
   model_name: "gpt-4o"
+  embedding_model_name: "text-embedding-3-large"
   temperature: 0.0
   max_tokens: 4096
 
@@ -39,6 +40,9 @@ memory:
   short_term_max_size: 100
   similarity_threshold: 0.3
   position_change_threshold: 0.3
+  short_term_recall_top_k: 3
+  long_term_max_areas: 3
+  embedding_model: "text-embedding-3-large"
   exploration_positions:
     - [1.25, 0.0, -1.75]
     - [-1.0, 0.0, 0.0]

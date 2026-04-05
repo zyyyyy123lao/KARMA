@@ -61,6 +61,9 @@ class Robot:
         )
         self._skill_registry = SkillRegistry()
 
+        # Memory (3DSG for long-term, accessible for graph-guided exploration)
+        self._long_term_memory = None
+
         # State
         self._state: Dict[str, Any] = {}
         self._held_object: Optional[str] = None
@@ -78,13 +81,24 @@ class Robot:
         target: str,
         positions: Optional[List[Tuple[float, float, float]]] = None,
     ) -> int:
-        """Explore to find a target object across multiple positions."""
+        """Explore to find a target object across multiple positions.
+
+        Uses graph-guided exploration if long_term_memory is set on the robot.
+        Falls back to brute-force ordered exploration otherwise.
+        """
         if positions is None:
             positions = self.config.get(
                 "exploration_positions",
                 [[1.25, 0, -1.75], [-1.0, 0, 0], [-0.25, 0, -1.5]],
             )
-        return self._nav.explore(self._robot_dict, target, positions, self.agent_id)
+        return self._nav.explore(
+            self._robot_dict,
+            target,
+            positions,
+            self.agent_id,
+            long_term_memory=self._long_term_memory,
+            current_position=self.position,
+        )
 
     def navigate_to_position(self, position: Tuple[float, float, float]) -> None:
         """Navigate directly to an (x, y, z) position."""
@@ -246,6 +260,15 @@ class Robot:
     def state(self) -> Dict[str, Any]:
         """Additional robot state."""
         return self._state
+
+    @property
+    def long_term_memory(self):
+        """The LongTermMemory (3DSG) instance, or None if not set."""
+        return self._long_term_memory
+
+    def set_long_term_memory(self, ltm) -> None:
+        """Set the LongTermMemory (3DSG) instance for graph-guided exploration."""
+        self._long_term_memory = ltm
 
     # ─── Internal ───────────────────────────────────────────────────────────────
 

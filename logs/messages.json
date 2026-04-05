@@ -21,7 +21,7 @@
   },
   {
     "role": "user",
-    "content": "center (-1.0, 0.00, -1.5) has {Cabinet, Cabinet, Cabinet, Cabinet, CounterTop, Faucet, HousePlant, Sink, SinkBasin, StoveBurner, StoveBurner, StoveKnob, Window}\ncenter (-1, 0.00, 0.0) has {Cabinet, Cabinet, CoffeeMachine, Drawer, Drawer, Drawer, Drawer, Toaster,CounterTop, Floor, Stool, Stool}\ncenter (-2, 0.00, 2.0) has {Fridge, GarbageCan}\ncenter (-0.25, 0.00, -1.5) has {Cabinet, Cabinet, Cabinet, CounterTop, Microwave, StoveBurner, StoveBurner, StoveKnob, StoveKnob, StoveKnob}\ncenter (0.5, 0.00, 1.5) has {}\ncenter (1.25, 0.00, -1.75) has {Drawer, Drawer, Drawer, Drawer, Drawer, Shelf, Shelf, Shelf, ShelvingUnit}\ncenter (1.5, 0.00, -0.25) has {LightSwitch}\ncenter (1.5, 0.00, 1.0) has {}. \n\nIf you are using the `Explore` function, you should consider which of the aforementioned points the object is likely to be located at when passing parameters, and sort all eight points in the order of the likelihood of finding the object."
+    "content": "Long-term Memory (3D Scene Graph):\n  [Floor 1]\n  Areas (connected via topological edges):\n\n---\n[Long-term memory: no specific areas match the query]"
   },
   {
     "role": "system",

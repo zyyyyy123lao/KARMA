@@ -483,6 +483,8 @@ class NavigationController:
         target_pattern: str,
         exploration_positions: List[Tuple[float, float, float]],
         agent_id: Optional[int] = None,
+        long_term_memory=None,
+        current_position: Optional[Tuple[float, float, float]] = None,
     ) -> int:
         """Explore multiple positions to find a target object.
 
@@ -491,12 +493,26 @@ class NavigationController:
             target_pattern: Regex pattern for target object.
             exploration_positions: Ordered list of (x, y, z) positions to explore.
             agent_id: Agent ID.
+            long_term_memory: Optional LongTermMemory (3DSG) for graph-guided exploration.
+            current_position: Current (x, y, z) position for graph-based ordering.
 
         Returns:
             Number of exploration positions visited.
         """
         if agent_id is None:
             agent_id = int(robot["name"][-1]) - 1
+
+        # Use graph-guided exploration if 3DSG is available
+        if long_term_memory is not None and current_position is not None:
+            ordered_positions = long_term_memory.get_exploration_order(
+                target_type=target_pattern,
+                current_position=current_position,
+            )
+            logger.info(
+                "Graph-guided exploration for '%s': %d areas in graph, ordered by relevance",
+                target_pattern, len(ordered_positions),
+            )
+            exploration_positions = ordered_positions
 
         visited = 0
         for position in exploration_positions:

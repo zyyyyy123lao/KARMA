@@ -10,7 +10,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from karma.config import APIConfig
 from karma.utils.file_utils import write_text
@@ -42,46 +42,58 @@ class TaskDecomposer:
         task_description: str,
         paths,
         use_short_term_memory: bool = False,
+        current_position: Optional[Tuple[float, float, float]] = None,
     ) -> List[Dict[str, str]]:
         """Build the messages list for the LLM prompt.
 
         Args:
             task_description: The task to decompose.
             paths: PathResolver instance for finding prompt files.
-            use_short_term_memory: Whether to include short-term memory in prompt.
+            use_short_term_memory: Whether to include short-term memory recall.
+            current_position: Current agent position for selective long-term recall.
         """
         from karma.utils.file_utils import read_text
+        from karma.memory import ShortTermMemory, LongTermMemory
 
         messages = []
 
-        # Skill definitions
         skills = read_text(paths.skills)
         messages.append({"role": "user", "content": skills})
 
-        # Action examples
         actions = read_text(paths.resources / "actions.py")
         messages.append({"role": "user", "content": actions})
 
-        # System role
         role = read_text(paths.role)
         messages.append({"role": "system", "content": role})
 
-        # Task examples
         examples = read_text(paths.examples)
         messages.append({"role": "user", "content": examples})
 
-        # Emphasis
         emphasize = read_text(paths.emphasize)
         messages.append({"role": "user", "content": emphasize})
 
-        # Long-term memory (scene layout)
-        long_term = read_text(paths.long_term_memory_prompt)
-        messages.append({"role": "user", "content": long_term})
+        # Long-term memory: use 3DSG with selective recall (paper-aligned)
+        long_term = LongTermMemory(paths.long_term_memory)
+        long_term_prompt = long_term.to_prompt_text(query=task_description)
+        messages.append({"role": "user", "content": long_term_prompt})
 
-        # CRITICAL: available action wrapper functions (authoritative list)
-        # The generated code MUST only call functions defined in scripts/action_wrappers.py.
-        # Never invent function names not listed here.
-        import inspect
+        # Short-term memory: use vector-based Top-K recall (paper-aligned)
+        if use_short_term_memory:
+            from karma.config import Config
+            config = Config.get_instance()
+            short_term = ShortTermMemory(
+                storage_path=paths.memory3,
+                max_size=config.memory.short_term_max_size,
+                embedding_model=config.memory.embedding_model,
+                similarity_threshold=config.memory.similarity_threshold,
+            )
+            short_term_prompt = short_term.to_prompt_text(
+                query=task_description,
+                top_k=config.memory.short_term_recall_top_k,
+            )
+            messages.append({"role": "user", "content": short_term_prompt})
+
+        # available action wrapper functions (authoritative list)
         import importlib.util
         spec = importlib.util.spec_from_file_location(
             "action_wrappers",
@@ -102,7 +114,6 @@ class TaskDecomposer:
             )
         messages.append({"role": "system", "content": wrapper_src})
 
-        # Task instruction
         instruction = (
             f"Please help me decompose the following task: {task_description}.\n"
             f"You MUST only call functions listed in the AVAILABLE FUNCTIONS above.\n"
@@ -118,19 +129,21 @@ class TaskDecomposer:
         task_description: str,
         paths,
         use_short_term_memory: bool = False,
+        current_position: Optional[Tuple[float, float, float]] = None,
     ) -> str:
         """Generate Python code for a task description.
 
         Args:
             task_description: The natural language task.
             paths: PathResolver for prompt files.
-            use_short_term_memory: Include short-term memory in prompt.
+            use_short_term_memory: Include short-term memory recall in prompt.
+            current_position: Current agent (x, y, z) position for selective recall.
 
         Returns:
             The generated Python code as a string.
         """
         messages = self.build_messages(
-            task_description, paths, use_short_term_memory
+            task_description, paths, use_short_term_memory, current_position
         )
 
         # Save messages for debugging
